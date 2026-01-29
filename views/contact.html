@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Contact</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="logo">Crypto Watcher</div>
+    <nav class="nav">
+      <a href="/">Admin</a>
+      <a href="/contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <h1>Contact Us</h1>
+    <p>Your message will be saved in MongoDB collection: <b>contacts</b></p>
+  </div>
+</section>
+
+<main class="container">
+  <div class="card">
+    <h2>Send message</h2>
+
+    <form id="contactForm" class="form">
+      <label>Name</label>
+      <input id="cName" required />
+
+      <label>Email</label>
+      <input id="cEmail" type="email" required />
+
+      <label>Message</label>
+      <textarea id="cMessage" required></textarea>
+
+      <button class="btn primary" type="submit">Send</button>
+      <p class="muted" id="cMsg"></p>
+    </form>
+  </div>
+</main>
+
+<footer class="footer">
+  Crypto Watcher © 2025
+</footer>
+
+<script src="/contact.js"></script>
+</body>
+</html>

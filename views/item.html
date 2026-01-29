@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Asset Details</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <div class="nav-container">
+    <div class="logo">Crypto Watcher</div>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="/search">Search</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero hero-small">
+  <h1>Asset Details</h1>
+  <p>Detailed information about the selected cryptocurrency</p>
+</section>
+
+<main>
+  <div class="asset-layout">
+
+    <div class="asset-preview">
+      <img id="assetImage" src="https://images.unsplash.com/photo-1621416894569-0f39ed31d247" alt="Asset image">
+    </div>
+
+    <div class="asset-card">
+      <div class="asset-top">
+        <h2 id="assetTitle">Loading...</h2>
+        <span class="asset-badge" id="assetSymbol">---</span>
+      </div>
+
+      <p class="asset-desc" id="assetDescription">Loading description...</p>
+
+      <div class="asset-stats">
+        <div class="stat">
+          <span class="stat-label">Price</span>
+          <span class="stat-value" id="assetPrice">$0</span>
+        </div>
+
+        <div class="stat">
+          <span class="stat-label">Market Cap</span>
+          <span class="stat-value" id="assetCap">$0</span>
+        </div>
+
+        <div class="stat">
+          <span class="stat-label">24h Change</span>
+          <span class="stat-value" id="assetChange">0%</span>
+        </div>
+      </div>
+
+      <div class="asset-actions">
+        <a class="btn btn-primary" href="/search">Back to Search</a>
+        <a class="btn btn-outline" href="/">Home</a>
+      </div>
+
+      <div class="asset-api">
+        <p class="muted">API test:</p>
+        <a id="apiLink" href="#" target="_blank">Open JSON</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  Crypto Watcher © 2025
+</footer>
+
+<script>
+  function formatMoney(n) {
+    if (n === null || n === undefined || isNaN(Number(n))) return "-";
+    return "$" + Number(n).toLocaleString();
+  }
+
+  async function loadAsset() {
+    const id = window.location.pathname.split("/").pop();
+    const apiUrl = "/api/assets/" + id;
+
+    document.getElementById("apiLink").href = apiUrl;
+    document.getElementById("apiLink").textContent = apiUrl;
+
+    try {
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.getElementById("assetTitle").textContent = "Asset not found";
+        document.getElementById("assetSymbol").textContent = "Invalid";
+        document.getElementById("assetDescription").textContent = data.error || "This asset does not exist.";
+        document.getElementById("assetPrice").textContent = "-";
+        document.getElementById("assetCap").textContent = "-";
+        document.getElementById("assetChange").textContent = "-";
+        return;
+      }
+
+      const img = (data.imageUrl && data.imageUrl.trim() !== "")
+        ? data.imageUrl
+        : ((data.image && data.image.trim() !== "") ? data.image : "https://images.unsplash.com/photo-1621416894569-0f39ed31d247");
+
+      document.getElementById("assetImage").src = img;
+      document.getElementById("assetImage").alt = data.name;
+
+      document.getElementById("assetTitle").textContent = `${data.name} (${data.symbol})`;
+      document.getElementById("assetSymbol").textContent = data.symbol;
+
+      document.getElementById("assetDescription").textContent = data.description || "No description provided.";
+
+      document.getElementById("assetPrice").textContent = formatMoney(data.price);
+      document.getElementById("assetCap").textContent = formatMoney(data.marketCap);
+
+      const change = data.change24h;
+      if (change === null || change === undefined || isNaN(Number(change))) {
+        document.getElementById("assetChange").textContent = "-";
+      } else {
+        const sign = Number(change) > 0 ? "+" : "";
+        document.getElementById("assetChange").textContent = sign + Number(change) + "%";
+      }
+
+    } catch (e) {
+      document.getElementById("assetTitle").textContent = "Error";
+      document.getElementById("assetSymbol").textContent = "Server";
+      document.getElementById("assetDescription").textContent = "Failed to load asset data.";
+      document.getElementById("assetPrice").textContent = "-";
+      document.getElementById("assetCap").textContent = "-";
+      document.getElementById("assetChange").textContent = "-";
+    }
+  }
+
+  loadAsset();
+</script>
+
+</body>
+</html>
