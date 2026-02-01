@@ -10,7 +10,6 @@
 
 <header>
   <div class="nav-container">
-
     <div class="logo">Crypto Watcher</div>
 
     <nav>
@@ -20,7 +19,6 @@
       <a href="/contact">Contact</a>
       <a href="/search">Search</a>
     </nav>
-
   </div>
 </header>
 
@@ -37,19 +35,6 @@
 
   <div class="card-grid" id="assetsGrid"></div>
 
-
-  <h2 style="margin-top:40px;">API Test Links</h2>
-
-  <ul>
-    <li><a href="/api/assets" target="_blank">/api/assets</a></li>
-    <li><a href="/api/assets?sortBy=priceDesc" target="_blank">
-      /api/assets?sortBy=priceDesc
-    </a></li>
-    <li><a href="/api/assets?fields=name,symbol,price" target="_blank">
-      /api/assets?fields=name,symbol,price
-    </a></li>
-  </ul>
-
 </main>
 
 
@@ -61,7 +46,6 @@
 <script>
 
 function getDefaultImage(symbol) {
-
   const map = {
     BTC: "https://images.unsplash.com/photo-1621416894569-0f39ed31d247",
     ETH: "https://img.decrypt.co/insecure/rs:fit:3840:0:0:0/plain/https://cdn.decrypt.co/wp-content/uploads/2024/07/ethereum-coin-wall-street-price-chart-gID_7.jpeg@webp",
@@ -76,12 +60,10 @@ async function loadAssets() {
 
   const grid = document.getElementById("assetsGrid");
 
-
   try {
 
     const res = await fetch("/api/assets");
     const assets = await res.json();
-
 
     if (!Array.isArray(assets) || assets.length === 0) {
 
@@ -96,7 +78,6 @@ async function loadAssets() {
       return;
     }
 
-
     grid.innerHTML = assets.map(asset => {
 
       const symbol = (asset.symbol || "").toUpperCase();
@@ -106,7 +87,6 @@ async function loadAssets() {
           ? asset.imageUrl
           : getDefaultImage(symbol);
 
-
       return `
         <div class="card">
 
@@ -114,7 +94,7 @@ async function loadAssets() {
 
           <h3>${asset.name}</h3>
 
-          <p style="margin:10px 0;color:#555;">
+          <p>
             ${symbol} • $${Number(asset.price).toLocaleString()}
           </p>
 
@@ -125,20 +105,18 @@ async function loadAssets() {
 
     }).join("");
 
-
   } catch (e) {
 
     grid.innerHTML = `
       <div class="card">
         <h3>Error loading assets</h3>
-        <p>Check server + MongoDB connection</p>
+        <p>Check server + MongoDB</p>
       </div>
     `;
 
   }
 
 }
-
 
 loadAssets();
 
