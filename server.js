@@ -1,5 +1,18 @@
 const express = require("express");
 const path = require("path");
+const { connectDB } = require("./database/mongo");
+
+// ==== FORCE DB CONNECT ON START ====
+(async () => {
+  try {
+    console.log("==== TRYING TO CONNECT TO MONGO ====");
+    const db = await connectDB();
+    console.log("✅ CONNECTED TO DB:", db.databaseName);
+  } catch (err) {
+    console.error("❌ MONGO CONNECTION FAILED:", err);
+    process.exit(1);
+  }
+})();
 
 const app = express();
 const PORT = process.env.PORT || 10000;
