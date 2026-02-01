@@ -8,7 +8,7 @@ let db;
 async function connectDB() {
   if (!db) {
     await client.connect();
-    db = client.db(); // 
+    db = client.db("crypto_watcher");
   }
   return db;
 }
