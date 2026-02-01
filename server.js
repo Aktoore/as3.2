@@ -1,5 +1,6 @@
 const express = require("express");
 const path = require("path");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,6 +27,14 @@ app.get("/contact", (req, res) => {
   res.sendFile(path.join(__dirname, "views/contact.html"));
 });
 
+app.get("/about", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/about.html"));
+});
+
+app.get("/search", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/search.html"));
+});
+
 const assetsRoutes = require("./routes/assets");
 app.use("/api/assets", assetsRoutes);
 
@@ -41,5 +50,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

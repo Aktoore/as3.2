@@ -1,123 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
   <title>Crypto Watcher</title>
-  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
 
-<header class="topbar">
-  <div class="container topbar-inner">
+<header>
+  <div class="nav-container">
+
     <div class="logo">Crypto Watcher</div>
-    <nav class="nav">
-      <a href="/">Admin</a>
+
+    <nav>
+      <a href="/">Home</a>
+      <a href="/admin">Admin</a>
+      <a href="/about">About</a>
       <a href="/contact">Contact</a>
-      <a href="/api/assets" target="_blank">API</a>
+      <a href="/search">Search</a>
     </nav>
+
   </div>
 </header>
 
+
 <section class="hero">
-  <div class="container">
-    <h1>Assets Admin Panel</h1>
-    <p>Create, update and delete crypto assets (CRUD) using MongoDB</p>
-  </div>
+  <h1>Track Crypto Easily</h1>
+  <p>Monitor popular cryptocurrencies and explore market data</p>
 </section>
 
-<main class="container">
 
-  <div class="grid-2">
-    <div class="card">
-      <h2 id="formTitle">Create Asset</h2>
+<main>
 
-      <form id="assetForm" class="form">
-        <input type="hidden" id="assetId" />
+  <h2>Popular Assets</h2>
 
-        <label>Name</label>
-        <input id="name" placeholder="Bitcoin" required />
+  <div class="card-grid" id="assetsGrid"></div>
 
-        <label>Symbol</label>
-        <input id="symbol" placeholder="BTC" required />
 
-        <label>Price</label>
-        <input id="price" type="number" step="0.01" placeholder="64000" required />
+  <h2 style="margin-top:40px;">API Test Links</h2>
 
-        <label>Description</label>
-        <textarea id="description" placeholder="Short description..."></textarea>
-
-        <label>Market Cap</label>
-        <input id="marketCap" type="number" step="1" placeholder="1250000000000" />
-
-        <label>24h Change (%)</label>
-        <input id="change24h" type="number" step="0.01" placeholder="2.4" />
-
-        <label>Image URL</label>
-        <input id="imageUrl" placeholder="https://..." />
-
-        <div class="actions">
-          <button class="btn primary" type="submit">Save</button>
-          <button class="btn" type="button" id="resetBtn">Reset</button>
-        </div>
-
-        <p class="muted" id="msg"></p>
-      </form>
-    </div>
-
-    <div class="card">
-      <div class="table-top">
-        <h2>Assets List</h2>
-
-        <div class="filters">
-          <input id="searchInput" placeholder="Search by name or symbol..." />
-          <select id="sortSelect">
-            <option value="">Sort: Default</option>
-            <option value="priceDesc">Price ↓</option>
-            <option value="price">Price ↑</option>
-            <option value="name">Name A-Z</option>
-            <option value="nameDesc">Name Z-A</option>
-            <option value="marketCap">MarketCap ↓</option>
-          </select>
-          <button class="btn" id="reloadBtn">Reload</button>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Symbol</th>
-              <th>Price</th>
-              <th>MarketCap</th>
-              <th>24h</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="assetsTable"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="card links-card">
-    <h3>API Test Links</h3>
-    <div class="links">
-      <a href="/api/assets" target="_blank">GET /api/assets</a>
-      <a href="/api/assets?sortBy=priceDesc" target="_blank">GET /api/assets?sortBy=priceDesc</a>
-      <a href="/api/assets?fields=name,symbol,price" target="_blank">GET /api/assets?fields=name,symbol,price</a>
-      <a href="/contact">Contact Form</a>
-    </div>
-  </div>
+  <ul>
+    <li><a href="/api/assets" target="_blank">/api/assets</a></li>
+    <li><a href="/api/assets?sortBy=priceDesc" target="_blank">/api/assets?sortBy=priceDesc</a></li>
+    <li><a href="/api/assets?fields=name,symbol,price" target="_blank">/api/assets?fields=name,symbol,price</a></li>
+  </ul>
 
 </main>
 
-<footer class="footer">
+
+<footer>
   Crypto Watcher © 2025
 </footer>
 
-<script src="/admin.js"></script>
+
+<script>
+
+function getDefaultImage(symbol) {
+
+  const map = {
+    BTC: "https://images.unsplash.com/photo-1621416894569-0f39ed31d247",
+    ETH: "https://img.decrypt.co/insecure/rs:fit:3840:0:0:0/plain/https://cdn.decrypt.co/wp-content/uploads/2024/07/ethereum-coin-wall-street-price-chart-gID_7.jpeg@webp",
+    SOL: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ781zFDNh3MT8HWHDnXrDP2KPt6lHyfI-Ysw&s"
+  };
+
+  return map[symbol] || map.BTC;
+}
+
+
+async function loadAssets() {
+
+  const grid = document.getElementById("assetsGrid");
+
+
+  try {
+
+    const res = await fetch("/api/assets");
+    const assets = await res.json();
+
+
+    if (!Array.isArray(assets) || assets.length === 0) {
+
+      grid.innerHTML = `
+        <div class="card">
+          <h3>No assets found</h3>
+          <p>Add assets in Admin panel</p>
+          <a href="/admin">Go to Admin</a>
+        </div>
+      `;
+
+      return;
+    }
+
+
+    grid.innerHTML = assets.map(asset => {
+
+      const symbol = (asset.symbol || "").toUpperCase();
+
+      const img =
+        asset.imageUrl && asset.imageUrl.trim() !== ""
+          ? asset.imageUrl
+          : getDefaultImage(symbol);
+
+
+      return `
+        <div class="card">
+
+          <img src="${img}" alt="${asset.name}">
+
+          <h3>${asset.name}</h3>
+
+          <p style="margin:10px 0;color:#555;">
+            ${symbol} • $${Number(asset.price).toLocaleString()}
+          </p>
+
+          <a href="/item/${asset._id}">View details</a>
+
+        </div>
+      `;
+
+    }).join("");
+
+
+  } catch (e) {
+
+    grid.innerHTML = `
+      <div class="card">
+        <h3>Error loading assets</h3>
+        <p>Check server + MongoDB connection</p>
+      </div>
+    `;
+
+  }
+
+}
+
+
+loadAssets();
+
+</script>
+
 </body>
 </html>
