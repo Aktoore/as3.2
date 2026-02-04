@@ -1,145 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Asset Details</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/style.css" />
 </head>
+
 <body>
 
 <header>
   <div class="nav-container">
     <div class="logo">Crypto Watcher</div>
-    <nav>
-      <nav>
-    <a href="/">Home</a>
-    <a href="/admin">Admin</a>
-    <a href="/about">About</a>
-    <a href="/contact">Contact</a>
-    <a href="/search">Search</a>
-    <a href="/login">Login</a>
-</nav>
 
+    <nav>
+      <a href="/">Home</a>
+      <a href="/admin">Admin</a>
+      <a href="/about">About</a>
+      <a href="/contact">Contact</a>
+      <a href="/search">Search</a>
+      <a href="/login">Login</a>
     </nav>
   </div>
 </header>
 
+
 <section class="hero hero-small">
-  <h1>Asset Details</h1>
-  <p>Detailed information about the selected cryptocurrency</p>
+  <h1 id="title">Loading...</h1>
+  <p id="subtitle">Please wait</p>
 </section>
 
-<main>
-  <div class="asset-layout">
 
-    <div class="asset-preview">
-      <img id="assetImage" src="https://images.unsplash.com/photo-1621416894569-0f39ed31d247" alt="Asset image">
+<main>
+
+  <div class="asset-page">
+
+    <div class="asset-left">
+      <img id="image" />
     </div>
 
-    <div class="asset-card">
-      <div class="asset-top">
-        <h2 id="assetTitle">Loading...</h2>
-        <span class="asset-badge" id="assetSymbol">---</span>
-      </div>
 
-      <p class="asset-desc" id="assetDescription">Loading description...</p>
+    <div class="asset-right">
 
-      <div class="asset-stats">
+      <h2 id="name"></h2>
+
+      <div class="badge" id="symbol"></div>
+
+      <p class="desc" id="description"></p>
+
+
+      <div class="stats">
+
         <div class="stat">
-          <span class="stat-label">Price</span>
-          <span class="stat-value" id="assetPrice">$0</span>
+          <span>Price</span>
+          <b id="price">$0</b>
         </div>
 
         <div class="stat">
-          <span class="stat-label">Market Cap</span>
-          <span class="stat-value" id="assetCap">$0</span>
+          <span>Market Cap</span>
+          <b id="cap">$0</b>
         </div>
 
         <div class="stat">
-          <span class="stat-label">24h Change</span>
-          <span class="stat-value" id="assetChange">0%</span>
+          <span>24h Change</span>
+          <b id="change">0%</b>
         </div>
+
       </div>
 
-      <div class="asset-actions">
-        <a class="btn btn-primary" href="/search">Back to Search</a>
-        <a class="btn btn-outline" href="/">Home</a>
+
+      <div class="buttons">
+        <a href="/search" class="btn">Back</a>
+        <a href="/" class="btn primary">Home</a>
       </div>
 
-      <div class="asset-api">
-        <p class="muted">API test:</p>
-        <a id="apiLink" href="#" target="_blank">Open JSON</a>
-      </div>
+
+      <p class="api">
+        API:
+        <a id="api" target="_blank"></a>
+      </p>
+
     </div>
 
   </div>
+
 </main>
+
 
 <footer>
   Crypto Watcher © 2025
 </footer>
 
+
 <script>
-  function formatMoney(n) {
-    if (n === null || n === undefined || isNaN(Number(n))) return "-";
-    return "$" + Number(n).toLocaleString();
-  }
 
-  async function loadAsset() {
-    const id = window.location.pathname.split("/").pop();
-    const apiUrl = "/api/assets/" + id;
+function money(n){
+  if(!n) return "-";
+  return "$" + Number(n).toLocaleString();
+}
 
-    document.getElementById("apiLink").href = apiUrl;
-    document.getElementById("apiLink").textContent = apiUrl;
 
-    try {
-      const res = await fetch(apiUrl);
-      const data = await res.json();
+async function load(){
 
-      if (!res.ok) {
-        document.getElementById("assetTitle").textContent = "Asset not found";
-        document.getElementById("assetSymbol").textContent = "Invalid";
-        document.getElementById("assetDescription").textContent = data.error || "This asset does not exist.";
-        document.getElementById("assetPrice").textContent = "-";
-        document.getElementById("assetCap").textContent = "-";
-        document.getElementById("assetChange").textContent = "-";
-        return;
-      }
+  const id = location.pathname.split("/").pop();
 
-      const img = (data.imageUrl && data.imageUrl.trim() !== "")
-        ? data.imageUrl
-        : ((data.image && data.image.trim() !== "") ? data.image : "https://images.unsplash.com/photo-1621416894569-0f39ed31d247");
+  const url = "/api/assets/" + id;
 
-      document.getElementById("assetImage").src = img;
-      document.getElementById("assetImage").alt = data.name;
+  document.getElementById("api").href = url;
+  document.getElementById("api").textContent = url;
 
-      document.getElementById("assetTitle").textContent = `${data.name} (${data.symbol})`;
-      document.getElementById("assetSymbol").textContent = data.symbol;
 
-      document.getElementById("assetDescription").textContent = data.description || "No description provided.";
+  try{
 
-      document.getElementById("assetPrice").textContent = formatMoney(data.price);
-      document.getElementById("assetCap").textContent = formatMoney(data.marketCap);
+    const res = await fetch(url);
+    const a = await res.json();
 
-      const change = data.change24h;
-      if (change === null || change === undefined || isNaN(Number(change))) {
-        document.getElementById("assetChange").textContent = "-";
-      } else {
-        const sign = Number(change) > 0 ? "+" : "";
-        document.getElementById("assetChange").textContent = sign + Number(change) + "%";
-      }
-
-    } catch (e) {
-      document.getElementById("assetTitle").textContent = "Error";
-      document.getElementById("assetSymbol").textContent = "Server";
-      document.getElementById("assetDescription").textContent = "Failed to load asset data.";
-      document.getElementById("assetPrice").textContent = "-";
-      document.getElementById("assetCap").textContent = "-";
-      document.getElementById("assetChange").textContent = "-";
+    if(!res.ok){
+      document.getElementById("title").textContent = "Not Found";
+      document.getElementById("subtitle").textContent = "Asset not found";
+      return;
     }
+
+
+    document.getElementById("title").textContent = a.name;
+    document.getElementById("subtitle").textContent = a.symbol;
+
+    document.getElementById("name").textContent = a.name;
+    document.getElementById("symbol").textContent = a.symbol;
+
+    document.getElementById("description").textContent =
+      a.description || "No description";
+
+    document.getElementById("price").textContent = money(a.price);
+    document.getElementById("cap").textContent = money(a.marketCap);
+
+
+    let ch = a.change24h;
+
+    if(ch !== null && ch !== undefined){
+      ch = Number(ch).toFixed(2);
+      document.getElementById("change").textContent = ch + "%";
+    }
+
+
+    document.getElementById("image").src =
+      a.imageUrl || "https://images.unsplash.com/photo-1621416894569-0f39ed31d247";
+
+
+  }catch(e){
+
+    document.getElementById("title").textContent = "Error";
+    document.getElementById("subtitle").textContent = "Server error";
+
   }
 
-  loadAsset();
+}
+
+load();
+
 </script>
 
 </body>
