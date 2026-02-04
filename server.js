@@ -75,6 +75,14 @@ app.use("/api/contacts", require("./routes/contacts"));
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/session", require("./routes/session"));
 
+app.get("/search", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/search.html"));
+});
+
+app.get("/item/:id", (req, res) => {
+  res.sendFile(path.join(__dirname, "views/item.html"));
+});
+
 app.use((req, res) => {
   if (req.originalUrl.startsWith("/api")) {
     res.status(404).json({ error: "API route not found" });
