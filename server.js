@@ -1,20 +1,15 @@
 const express = require("express");
 const path = require("path");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const { connectDB } = require("./database/mongo");
 require("dotenv").config();
-
-const session = require("express-session");
-const MongoStore = require("connect-mongo")(session);
-
-const { ensureDefaultUsers } = require("./database/seedUsers");
-const { requireAuth } = require("./middleware/auth");
 
 (async () => {
   try {
     console.log("==== TRYING TO CONNECT TO MONGO ====");
     const db = await connectDB();
     console.log("✅ CONNECTED TO DB:", db.databaseName);
-    await ensureDefaultUsers(db);
   } catch (err) {
     console.error("❌ MONGO CONNECTION FAILED:", err);
     process.exit(1);
@@ -22,28 +17,23 @@ const { requireAuth } = require("./middleware/auth");
 })();
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use(
   session({
-    name: "sid",
-    secret: process.env.SESSION_SECRET || "dev_secret",
+    secret: process.env.SESSION_SECRET || "secret123",
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24
-    },
-    store: new MongoStore({
+    store: MongoStore.create({
       mongoUrl: process.env.MONGO_URI,
-      dbName: "crypto_watcher",
-      collectionName: "sessions"
-    })
+      collectionName: "sessions",
+    }),
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24,
+    },
   })
 );
 
@@ -62,7 +52,11 @@ app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "views/login.html"));
 });
 
-app.get("/admin", requireAuth, (req, res) => {
+app.get("/admin", (req, res) => {
+  if (!req.session.user || req.session.user.role !== "admin") {
+    return res.redirect("/login");
+  }
+
   res.sendFile(path.join(__dirname, "views/admin.html"));
 });
 
@@ -96,5 +90,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
