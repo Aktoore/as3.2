@@ -1,35 +1,38 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Crypto Watcher</title>
-  <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<title>Crypto Watcher</title>
+<link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
 
-<header>
-  <div class="nav-container">
+<header class="topbar">
+  <div class="container topbar-inner">
+
     <div class="logo">Crypto Watcher</div>
 
-    <nav>
+    <nav id="nav">
       <a href="/">Home</a>
-      <a href="/admin">Admin</a>
+      <a href="/admin" id="adminLink">Admin</a>
       <a href="/about">About</a>
       <a href="/contact">Contact</a>
       <a href="/search">Search</a>
+
+      <a href="/login" id="loginBtn">Login</a>
+      <a href="#" id="logoutBtn" style="display:none;">Logout</a>
     </nav>
+
   </div>
 </header>
 
-
 <section class="hero">
-  <h1>Track Crypto Easily</h1>
-  <p>Monitor popular cryptocurrencies and explore market data</p>
+  <h1>Watch Crypto Cash by Click</h1>
+  <p>Fast. Simple. Smart crypto tracking.</p>
 </section>
 
-
-<main>
+<main class="container">
 
   <h2>Popular Assets</h2>
 
@@ -37,88 +40,85 @@
 
 </main>
 
-
 <footer>
-  Crypto Watcher © 2025
+Crypto Watcher © 2025
 </footer>
-
 
 <script>
 
-function getDefaultImage(symbol) {
+// ===== AUTH UI =====
+fetch("/api/me")
+.then(r=>r.json())
+.then(user=>{
+
+  if(user.logged){
+
+    document.getElementById("loginBtn").style.display="none";
+    document.getElementById("logoutBtn").style.display="inline";
+
+    if(!user.isAdmin){
+      document.getElementById("adminLink").style.display="none";
+    }
+
+  }else{
+    document.getElementById("adminLink").style.display="none";
+  }
+
+});
+
+document.getElementById("logoutBtn").onclick = async ()=>{
+
+  await fetch("/logout");
+  location.reload();
+
+};
+
+
+// ===== LOAD ASSETS =====
+function getDefault(symbol){
+
   const map = {
-    BTC: "https://images.unsplash.com/photo-1621416894569-0f39ed31d247",
-    ETH: "https://img.decrypt.co/insecure/rs:fit:3840:0:0:0/plain/https://cdn.decrypt.co/wp-content/uploads/2024/07/ethereum-coin-wall-street-price-chart-gID_7.jpeg@webp",
-    SOL: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ781zFDNh3MT8HWHDnXrDP2KPt6lHyfI-Ysw&s"
+    BTC:"https://images.unsplash.com/photo-1621416894569-0f39ed31d247",
+    ETH:"https://img.decrypt.co/insecure/rs:fit:3840:0:0/plain/https://cdn.decrypt.co/wp-content/uploads/2024/07/ethereum-coin-wall-street-price-chart-gID_7.jpeg@webp",
+    SOL:"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ781zFDNh3MT8HWHDnXrDP2KPt6lHyfI-Ysw"
   };
 
   return map[symbol] || map.BTC;
 }
 
-
-async function loadAssets() {
+async function load(){
 
   const grid = document.getElementById("assetsGrid");
 
-  try {
+  const res = await fetch("/api/assets");
+  const data = await res.json();
 
-    const res = await fetch("/api/assets");
-    const assets = await res.json();
+  if(!Array.isArray(data)||!data.length){
+    grid.innerHTML="<p>No assets</p>";
+    return;
+  }
 
-    if (!Array.isArray(assets) || assets.length === 0) {
+  grid.innerHTML = data.map(a=>{
 
-      grid.innerHTML = `
-        <div class="card">
-          <h3>No assets found</h3>
-          <p>Add assets in Admin panel</p>
-          <a href="/admin">Go to Admin</a>
-        </div>
-      `;
+    const img = a.imageUrl?.trim() ? a.imageUrl : getDefault(a.symbol);
 
-      return;
-    }
-
-    grid.innerHTML = assets.map(asset => {
-
-      const symbol = (asset.symbol || "").toUpperCase();
-
-      const img =
-        asset.imageUrl && asset.imageUrl.trim() !== ""
-          ? asset.imageUrl
-          : getDefaultImage(symbol);
-
-      return `
-        <div class="card">
-
-          <img src="${img}" alt="${asset.name}">
-
-          <h3>${asset.name}</h3>
-
-          <p>
-            ${symbol} • $${Number(asset.price).toLocaleString()}
-          </p>
-
-          <a href="/item/${asset._id}">View details</a>
-
-        </div>
-      `;
-
-    }).join("");
-
-  } catch (e) {
-
-    grid.innerHTML = `
+    return `
       <div class="card">
-        <h3>Error loading assets</h3>
-        <p>Check server + MongoDB</p>
+
+        <img src="${img}">
+        <h3>${a.name}</h3>
+        <p>${a.symbol} • $${a.price}</p>
+
+        <a href="/item/${a._id}">View</a>
+
       </div>
     `;
 
-  }
+  }).join("");
 
 }
 
-loadAssets();
+load();
 
 </script>
 

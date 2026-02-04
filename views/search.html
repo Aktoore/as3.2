@@ -1,88 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Search</title>
-  <link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<title>Search</title>
+<link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
 
-<header>
-  <div class="nav-container">
-    <div class="logo">Crypto Watcher</div>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
-      <a href="/search?q=bitcoin">Search</a>
-    </nav>
-  </div>
+<header class="topbar">
+<div class="container topbar-inner">
+
+<div class="logo">Crypto Watcher</div>
+
+<nav>
+<a href="/">Home</a>
+<a href="/search">Search</a>
+<a href="/login">Login</a>
+</nav>
+
+</div>
 </header>
 
 <section class="hero">
-  <h1>Search Assets</h1>
-  <p>Find cryptocurrencies by name or symbol</p>
+<h1>Search</h1>
 </section>
 
-<main>
-  <form id="searchForm" style="margin-bottom:25px;">
-    <input id="searchInput" type="text" name="q" placeholder="Search: bitcoin, eth, sol..." required>
-    <button type="submit">Search</button>
-  </form>
+<main class="container">
 
-  <p>Showing results for: <strong id="query"></strong></p>
+<form id="f">
 
-  <div class="card-grid" id="resultsGrid"></div>
+<input id="q" placeholder="Search...">
+<button>Go</button>
+
+</form>
+
+<div id="res" class="card-grid"></div>
+
 </main>
 
-<footer>
-  Crypto Watcher © 2025
-</footer>
-
 <script>
-  const params = new URLSearchParams(window.location.search);
-  const q = params.get('q') || '';
-  document.getElementById('query').textContent = q || 'none';
-  document.getElementById('searchInput').value = q;
 
-  document.getElementById('searchForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const value = document.getElementById('searchInput').value.trim();
-    if (!value) return;
-    window.location.href = `/search?q=${encodeURIComponent(value)}`;
-  });
+f.onsubmit=e=>{
+e.preventDefault();
+location.href=`/search?q=${q.value}`;
+};
 
-  async function loadResults() {
-    if (!q) return;
-
-    const res = await fetch(`/api/assets?q=${encodeURIComponent(q)}&sort=price&order=desc`);
-    const data = await res.json();
-
-    const grid = document.getElementById('resultsGrid');
-    grid.innerHTML = '';
-
-    if (!Array.isArray(data) || data.length === 0) {
-      grid.innerHTML = `<p style="text-align:center; width:100%;">No assets found.</p>`;
-      return;
-    }
-
-    for (const asset of data) {
-      const img = asset.imageUrl || 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0';
-      const price = typeof asset.price === 'number' ? asset.price.toLocaleString() : asset.price;
-
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <img src="${img}" alt="${asset.name}">
-        <h3>${asset.name} (${asset.symbol})</h3>
-        <p style="margin-bottom:10px;">Price: $${price}</p>
-        <a href="/item/${asset._id}">View details</a>
-      `;
-      grid.appendChild(card);
-    }
-  }
-
-  loadResults();
 </script>
 
 </body>

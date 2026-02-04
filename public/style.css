@@ -16,9 +16,12 @@ body {
 
 
 header {
-  background: linear-gradient(90deg, #000, #1a1a1a);
-  padding: 18px 40px;
+  background: linear-gradient(135deg, #1a0033, #0d001a);
+  padding: 60px 20px;
+  text-align: center;
+  color: white;
 }
+
 
 .nav-container,
 .topbar-inner {
@@ -339,4 +342,43 @@ body {
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.4;
+}
+.login-box {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 30px;
+  background: #14002b;
+  border-radius: 12px;
+  color: white;
+  box-shadow: 0 0 20px rgba(140, 0, 255, 0.4);
+}
+
+.login-box input {
+  width: 100%;
+  padding: 10px;
+  margin: 12px 0;
+  border-radius: 6px;
+  border: none;
+}
+
+.login-box button {
+  width: 100%;
+  background: #7b2cff;
+  border: none;
+  padding: 12px;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.coin-card {
+  background: #0f001f;
+  color: white;
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 0 10px rgba(120, 0, 255, 0.3);
+  transition: 0.2s;
+}
+
+.coin-card:hover {
+  transform: scale(1.03);
 }
