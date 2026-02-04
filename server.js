@@ -2,7 +2,6 @@ const express = require("express");
 const path = require("path");
 const { connectDB } = require("./database/mongo");
 
-// ==== FORCE DB CONNECT ON START ====
 (async () => {
   try {
     console.log("==== TRYING TO CONNECT TO MONGO ====");

@@ -19,7 +19,7 @@ async function connectDB() {
     await client.connect();
     db = client.db("crypto_watcher");
 
-    console.log("✅ Connected to DB:", db.databaseName);
+    console.log("Connected to DB:", db.databaseName);
   }
 
   return db;
