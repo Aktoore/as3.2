@@ -4,7 +4,7 @@ const { connectDB } = require("./database/mongo");
 require("dotenv").config();
 
 const session = require("express-session");
-const MongoStore = require("connect-mongo");
+const MongoStore = require("connect-mongo")(session);
 
 const { ensureDefaultUsers } = require("./database/seedUsers");
 const { requireAuth } = require("./middleware/auth");
@@ -14,10 +14,7 @@ const { requireAuth } = require("./middleware/auth");
     console.log("==== TRYING TO CONNECT TO MONGO ====");
     const db = await connectDB();
     console.log("✅ CONNECTED TO DB:", db.databaseName);
-
-    // create admin/user if not exists
     await ensureDefaultUsers(db);
-
   } catch (err) {
     console.error("❌ MONGO CONNECTION FAILED:", err);
     process.exit(1);
@@ -42,7 +39,7 @@ app.use(
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24
     },
-    store: MongoStore.create({
+    store: new MongoStore({
       mongoUrl: process.env.MONGO_URI,
       dbName: "crypto_watcher",
       collectionName: "sessions"
@@ -90,7 +87,6 @@ app.use("/api/contacts", contactsRoutes);
 const authRoutes = require("./routes/auth");
 app.use("/api/auth", authRoutes);
 
-
 app.use((req, res) => {
   if (req.originalUrl.startsWith("/api")) {
     res.status(404).json({ error: "API route not found" });
@@ -98,7 +94,6 @@ app.use((req, res) => {
     res.status(404).sendFile(path.join(__dirname, "views/404.html"));
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
