@@ -382,3 +382,76 @@ body {
 .coin-card:hover {
   transform: scale(1.03);
 }
+.asset-page{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:40px;
+  max-width:1100px;
+  margin:60px auto;
+}
+
+.asset-left{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f7f7f7;
+  border-radius:12px;
+  padding:20px;
+  height:320px;
+}
+
+.asset-left img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  border-radius:10px;
+}
+
+.asset-left{
+  box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+.asset-right{
+  background:#fff;
+  padding:30px;
+  border-radius:12px;
+}
+
+.badge{
+  display:inline-block;
+  background:#5a2fff;
+  color:#fff;
+  padding:4px 12px;
+  border-radius:6px;
+  margin:10px 0;
+}
+
+.desc{
+  margin:20px 0;
+  color:#555;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:15px;
+  margin:25px 0;
+}
+
+.stat{
+  background:#f5f5f5;
+  padding:15px;
+  border-radius:8px;
+  text-align:center;
+}
+
+.buttons{
+  display:flex;
+  gap:15px;
+  margin-top:20px;
+}
+
+.api{
+  margin-top:20px;
+  font-size:14px;
+}
