@@ -2,56 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Login - Crypto Watcher</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login</title>
+
   <link rel="stylesheet" href="/style.css" />
 </head>
-<body>
+<body class="auth-page">
 
-<header class="topbar">
-  <div class="container topbar-inner">
-    <div class="logo">Crypto Watcher</div>
-    <nav class="nav">
-      <a href="/">Home</a>
-      <a href="/admin">Admin</a>
-      <a href="/contact">Contact</a>
-    </nav>
-  </div>
-</header>
+<div class="auth-box">
 
-<section class="hero">
-  <div class="container">
-    <h1>Login</h1>
-    <p>Sign in to access protected actions (create / update / delete).</p>
-  </div>
-</section>
+  <h2>Login</h2>
+  <p class="auth-sub">Enter your account</p>
 
-<main class="container">
-  <div class="card" style="max-width:520px;margin:0 auto;">
-    <h2>Enter your credentials</h2>
+  <form id="loginForm">
 
-    <form id="loginForm" class="form">
-      <label>Username</label>
-      <input id="username" placeholder="admin" autocomplete="username" required />
+    <input
+      type="text"
+      id="username"
+      placeholder="Username"
+      required
+    />
 
-      <label>Password</label>
-      <input id="password" type="password" placeholder="••••••" autocomplete="current-password" required />
+    <input
+      type="password"
+      id="password"
+      placeholder="Password"
+      required
+    />
 
-      <div class="actions">
-        <button class="btn primary" type="submit">Login</button>
-      </div>
+    <button type="submit">Login</button>
 
-      <p class="muted" id="loginMsg"></p>
-      <p class="muted" style="margin-top:6px;">
-        Default accounts: <b>admin</b>/<b>admin123</b> and <b>user</b>/<b>user123</b>
-      </p>
-    </form>
-  </div>
-</main>
+    <p id="loginMsg" class="auth-msg"></p>
 
-<footer class="footer">
-  Crypto Watcher © 2025
-</footer>
+    <div class="auth-demo">
+      admin / admin123<br>
+      user / user123
+    </div>
+
+  </form>
+
+</div>
 
 <script src="/login.js"></script>
 </body>
