@@ -3,125 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Crypto Watcher</title>
+  <title>Admin Panel</title>
+
   <link rel="stylesheet" href="/style.css" />
+  <script src="/main.js" defer></script>
 </head>
+
 <body>
 
 <header class="topbar">
   <div class="container topbar-inner">
+
     <div class="logo">Crypto Watcher</div>
-    <nav class="nav">
+
+    <nav>
       <a href="/">Home</a>
-      <a href="/admin">Admin</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
+      <a href="/admin" class="active">Admin</a>
       <a href="/search">Search</a>
-  <a href="/login">Login</a>
+      <a href="/contact">Contact</a>
+
+      <a href="/login" id="loginBtn">Login</a>
+      <a href="#" id="logoutBtn">Logout</a>
+
       <a href="/api/assets" target="_blank">API</a>
     </nav>
+
   </div>
 </header>
+
 
 <section class="hero">
   <div class="container">
     <h1>Assets Admin Panel</h1>
-    <p>Create, update and delete crypto assets (CRUD) using MongoDB</p>
+    <p>Manage crypto assets (CRUD)</p>
   </div>
 </section>
 
-<main class="container">
 
-  <div class="grid-2">
-    <div class="card">
-      <h2 id="formTitle">Create Asset</h2>
+<main class="admin-wrapper">
 
-      <form id="assetForm" class="form">
-        <input type="hidden" id="assetId" />
+<div class="admin-box">
 
-        <label>Name</label>
-        <input id="name" placeholder="Bitcoin" required />
+  <h2 id="formTitle">Create Asset</h2>
 
-        <label>Symbol</label>
-        <input id="symbol" placeholder="BTC" required />
+  <form id="assetForm" class="admin-form">
 
-        <label>Price</label>
-        <input id="price" type="number" step="0.01" placeholder="64000" required />
+    <input type="hidden" id="assetId" />
 
-        <label>Description</label>
-        <textarea id="description" placeholder="Short description..."></textarea>
+    <input id="name" placeholder="Name" required />
+    <input id="symbol" placeholder="Symbol" required />
+    <input id="price" type="number" step="0.01" placeholder="Price" required />
+    <input id="marketCap" type="number" placeholder="Market Cap" />
 
-        <label>Market Cap</label>
-        <input id="marketCap" type="number" step="1" placeholder="1250000000000" />
+    <input id="change24h" type="number" step="0.01" placeholder="24h Change %" />
+    <input id="imageUrl" placeholder="Image URL" />
 
-        <label>24h Change (%)</label>
-        <input id="change24h" type="number" step="0.01" placeholder="2.4" />
+    <textarea id="description" placeholder="Description"></textarea>
 
-        <label>Image URL</label>
-        <input id="imageUrl" placeholder="https://..." />
+    <button type="submit">Save</button>
+    <button type="button" id="resetBtn">Reset</button>
 
-        <div class="actions">
-          <button class="btn primary" type="submit">Save</button>
-          <button class="btn" type="button" id="resetBtn">Reset</button>
-        </div>
+    <p id="msg"></p>
 
-        <p class="muted" id="msg"></p>
-      </form>
+  </form>
+
+</div>
+
+<div class="admin-box">
+
+  <div class="admin-top">
+
+    <h2>Assets List</h2>
+
+    <div class="admin-filters">
+
+      <input id="searchInput" placeholder="Search..." />
+
+      <select id="sortSelect">
+        <option value="">Sort</option>
+        <option value="priceDesc">Price ↓</option>
+        <option value="price">Price ↑</option>
+        <option value="name">A-Z</option>
+        <option value="nameDesc">Z-A</option>
+        <option value="marketCap">MarketCap</option>
+      </select>
+
+      <button id="reloadBtn">Reload</button>
+
     </div>
 
-    <div class="card">
-      <div class="table-top">
-        <h2>Assets List</h2>
-
-        <div class="filters">
-          <input id="searchInput" placeholder="Search by name or symbol..." />
-          <select id="sortSelect">
-            <option value="">Sort: Default</option>
-            <option value="priceDesc">Price ↓</option>
-            <option value="price">Price ↑</option>
-            <option value="name">Name A-Z</option>
-            <option value="nameDesc">Name Z-A</option>
-            <option value="marketCap">MarketCap ↓</option>
-          </select>
-          <button class="btn" id="reloadBtn">Reload</button>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Symbol</th>
-              <th>Price</th>
-              <th>MarketCap</th>
-              <th>24h</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody id="assetsTable"></tbody>
-        </table>
-      </div>
-    </div>
   </div>
 
-  <div class="card links-card">
-    <h3>API Test Links</h3>
-    <div class="links">
-      <a href="/api/assets" target="_blank">GET /api/assets</a>
-      <a href="/api/assets?sortBy=priceDesc" target="_blank">GET /api/assets?sortBy=priceDesc</a>
-      <a href="/api/assets?fields=name,symbol,price" target="_blank">GET /api/assets?fields=name,symbol,price</a>
-      <a href="/contact">Contact Form</a>
-    </div>
+
+  <div id="assetsTable" class="admin-list"></div>
+
+</div>
+
+
+<div class="admin-box">
+
+  <h3>API Test Links</h3>
+
+  <div class="admin-links">
+
+    <a href="/api/assets" target="_blank">GET /api/assets</a>
+    <a href="/api/assets?sortBy=priceDesc" target="_blank">Sort by price</a>
+    <a href="/api/assets?fields=name,symbol,price" target="_blank">Only fields</a>
+    <a href="/contact">Contact</a>
+
   </div>
+
+</div>
+
 
 </main>
 
-<footer class="footer">
-  Crypto Watcher © 2025
+
+<footer>
+Crypto Watcher © 2026
 </footer>
 
+
 <script src="/admin.js"></script>
+
 </body>
 </html>
