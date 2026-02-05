@@ -3,12 +3,14 @@ const path = require("path");
 const session = require("express-session");
 const MongoStore = require("connect-mongo").default;
 const { connectDB } = require("./database/mongo");
+const { ensureDefaultUsers } = require("./database/seedUsers");
 require("dotenv").config();
 
 (async () => {
   try {
     console.log("==== TRYING TO CONNECT TO MONGO ====");
     const db = await connectDB();
+    await ensureDefaultUsers(db);
     console.log("CONNECTED TO DB:", db.databaseName);
   } catch (err) {
     console.error("MONGO CONNECTION FAILED:", err);
