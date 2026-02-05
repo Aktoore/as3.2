@@ -1,49 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Search</title>
 <link rel="stylesheet" href="/style.css">
+<script src="/main.js" defer></script>
 </head>
 
 <body>
 
 <header class="topbar">
-<div class="container topbar-inner">
+  <div class="container topbar-inner">
 
-<div class="logo">Crypto Watcher</div>
+    <div class="logo">Crypto Watcher</div>
 
-<nav>
-<a href="/">Home</a>
-<a href="/search">Search</a>
-<a href="/login">Login</a>
-</nav>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/search" class="active">Search</a>
 
-</div>
+      <a href="/login" id="loginBtn">Login</a>
+      <a href="#" id="logoutBtn">Logout</a>
+    </nav>
+
+  </div>
 </header>
 
+
 <section class="hero">
-<h1>Search</h1>
+  <h1>Search Assets</h1>
 </section>
+
 
 <main class="container">
 
-<form id="f">
+<form class="search-bar" id="searchForm">
 
-<input id="q" placeholder="Search...">
-<button>Go</button>
+  <input id="q" placeholder="Name / Symbol">
+
+  <select id="sort">
+    <option value="">Default</option>
+    <option value="price">Price ↑</option>
+    <option value="priceDesc">Price ↓</option>
+    <option value="name">Name A-Z</option>
+    <option value="nameDesc">Name Z-A</option>
+    <option value="marketCap">Market Cap</option>
+  </select>
+
+  <input id="min" type="number" placeholder="Min price">
+
+  <button>Search</button>
 
 </form>
+
 
 <div id="res" class="card-grid"></div>
 
 </main>
 
+
+<footer>
+Crypto Watcher © 2026
+</footer>
+
+
 <script>
 
-f.onsubmit=e=>{
-e.preventDefault();
-location.href=`/search?q=${q.value}`;
+searchForm.onsubmit = async e=>{
+
+  e.preventDefault();
+
+  const params = new URLSearchParams();
+
+  if(q.value) params.append("q",q.value);
+  if(sort.value) params.append("sortBy",sort.value);
+  if(min.value) params.append("minPrice",min.value);
+
+  const res = await fetch("/api/assets?" + params);
+  const data = await res.json();
+
+  const box = document.getElementById("res");
+
+  if(!data.length){
+
+    box.innerHTML="<p>No results</p>";
+    return;
+  }
+
+  box.innerHTML = data.map(a=>`
+
+    <div class="card">
+
+      <img src="${a.imageUrl || 'https://cdn-icons-png.flaticon.com/512/825/825508.png'}">
+
+      <h3>${a.name}</h3>
+
+      <p>${a.symbol} • $${a.price}</p>
+
+      <a href="/item/${a._id}">View</a>
+
+    </div>
+
+  `).join("");
+
 };
 
 </script>

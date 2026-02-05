@@ -4,39 +4,96 @@ const { connectDB } = require("../database/mongo");
 
 const router = express.Router();
 
+
+/* CHECK SESSION */
+
 router.get("/me", (req, res) => {
+
   if (!req.session?.user) {
-    return res.status(200).json({ authenticated: false });
+    return res.json({ authenticated: false });
   }
 
-  return res.status(200).json({
+  res.json({
     authenticated: true,
     user: {
       username: req.session.user.username,
       role: req.session.user.role
     }
   });
+
 });
 
-router.post("/login", async (req, res) => {
+
+/* REGISTER */
+
+router.post("/register", async (req, res) => {
+
   try {
+
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ error: "Invalid credentials" });
+      return res.status(400).json({ error: "Missing fields" });
+    }
+
+    if (password.length < 5) {
+      return res.status(400).json({ error: "Password too short" });
     }
 
     const db = await connectDB();
     const users = db.collection("users");
 
-    const user = await users.findOne({ username: String(username) });
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    const exists = await users.findOne({ username });
+
+    if (exists) {
+      return res.status(400).json({ error: "User exists" });
     }
 
-    const ok = await bcrypt.compare(String(password), user.passwordHash);
+    const hash = await bcrypt.hash(password, 10);
+
+    await users.insertOne({
+      username,
+      passwordHash: hash,
+      role: "user",
+      createdAt: new Date()
+    });
+
+    res.json({ success: true });
+
+  } catch (e) {
+
+    res.status(500).json({ error: "Server error" });
+
+  }
+
+});
+
+
+/* LOGIN */
+
+router.post("/login", async (req, res) => {
+
+  try {
+
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "Invalid data" });
+    }
+
+    const db = await connectDB();
+    const users = db.collection("users");
+
+    const user = await users.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ error: "Wrong login" });
+    }
+
+    const ok = await bcrypt.compare(password, user.passwordHash);
+
     if (!ok) {
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Wrong login" });
     }
 
     req.session.user = {
@@ -45,19 +102,31 @@ router.post("/login", async (req, res) => {
       role: user.role
     };
 
-    return res.status(200).json({ message: "Logged in" });
-  } catch (err) {
-    return res.status(500).json({ error: "Server error" });
+    res.json({ success: true });
+
+  } catch (e) {
+
+    res.status(500).json({ error: "Server error" });
+
   }
+
 });
+
+
+/* LOGOUT */
 
 router.post("/logout", (req, res) => {
-  if (!req.session) return res.status(200).json({ message: "Logged out" });
+
+  if (!req.session) return res.json({ success: true });
 
   req.session.destroy(() => {
-    res.clearCookie("sid");
-    return res.status(200).json({ message: "Logged out" });
+
+    res.clearCookie("connect.sid");
+    res.json({ success: true });
+
   });
+
 });
+
 
 module.exports = router;

@@ -1,48 +1,94 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Contact</title>
 <link rel="stylesheet" href="/style.css">
+<script src="/main.js" defer></script>
 </head>
 
 <body>
 
 <header class="topbar">
-<div class="container topbar-inner">
+  <div class="container topbar-inner">
 
-<div class="logo">Crypto Watcher</div>
+    <div class="logo">Crypto Watcher</div>
 
-<nav>
-<a href="/">Home</a>
-<a href="/contact">Contact</a>
-<a href="/login">Login</a>
-</nav>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/search">Search</a>
+      <a href="/contact" class="active">Contact</a>
 
-</div>
+      <a href="/login" id="loginBtn">Login</a>
+      <a href="#" id="logoutBtn">Logout</a>
+    </nav>
+
+  </div>
 </header>
 
+
 <section class="hero">
-<h1>Contact</h1>
+  <h1>Contact Us</h1>
 </section>
+
 
 <main class="container">
 
-<form id="contactForm" class="form">
+<form id="contactForm" class="contact-form">
 
-<input id="name" placeholder="Name" required>
-<input id="email" placeholder="Email" required>
-<textarea id="msg" placeholder="Message"></textarea>
+  <input id="name" placeholder="Name" required>
 
-<button>Send</button>
+  <input id="email" type="email" placeholder="Email" required>
 
-<p id="info"></p>
+  <textarea id="msg" placeholder="Message" rows="5"></textarea>
+
+  <button>Send</button>
+
+  <p id="info"></p>
 
 </form>
 
 </main>
 
-<script src="/contact.js"></script>
+
+<footer>
+Crypto Watcher © 2026
+</footer>
+
+
+<script>
+
+contactForm.onsubmit = async e=>{
+
+  e.preventDefault();
+
+  const res = await fetch("/api/contacts",{
+
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+
+    body:JSON.stringify({
+      name:name.value,
+      email:email.value,
+      message:msg.value
+    })
+
+  });
+
+  if(res.ok){
+
+    info.textContent="Message sent ✔";
+    contactForm.reset();
+
+  }else{
+
+    info.textContent="Error sending";
+
+  }
+
+};
+
+</script>
 
 </body>
 </html>

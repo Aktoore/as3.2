@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<title>Register</title>
 <link rel="stylesheet" href="/style.css">
 </head>
 
@@ -10,21 +10,21 @@
 
 <div class="auth-box">
 
-  <h2>Login</h2>
-  <p class="auth-sub">Access your account</p>
+  <h2>Register</h2>
+  <p class="auth-sub">Create new account</p>
 
-  <form id="loginForm">
+  <form id="regForm">
 
     <input id="username" placeholder="Username" required>
 
     <input id="password" type="password" placeholder="Password" required>
 
-    <button>Login</button>
+    <button>Create account</button>
 
     <p id="msg"></p>
 
     <div class="auth-links">
-      No account? <a href="/register">Register</a>
+      Have account? <a href="/login">Login</a>
     </div>
 
   </form>
@@ -34,11 +34,11 @@
 
 <script>
 
-loginForm.onsubmit = async e=>{
+regForm.onsubmit = async e=>{
 
   e.preventDefault();
 
-  const res = await fetch("/api/auth/login",{
+  const res = await fetch("/api/auth/register",{
 
     method:"POST",
     headers:{ "Content-Type":"application/json" },
@@ -54,11 +54,11 @@ loginForm.onsubmit = async e=>{
 
   if(res.ok){
 
-    location.href="/";
+    location.href="/login";
 
   }else{
 
-    msg.textContent = data.error || "Login failed";
+    msg.textContent = data.error;
 
   }
 

@@ -1,84 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Asset Details</title>
-  <link rel="stylesheet" href="/style.css" />
+<meta charset="UTF-8">
+<title>Asset</title>
+<link rel="stylesheet" href="/style.css">
+<script src="/main.js" defer></script>
 </head>
 
 <body>
 
-<header>
-  <div class="nav-container">
+<header class="topbar">
+  <div class="container topbar-inner">
+
     <div class="logo">Crypto Watcher</div>
 
     <nav>
       <a href="/">Home</a>
-      <a href="/admin">Admin</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
       <a href="/search">Search</a>
-      <a href="/login">Login</a>
+
+      <a href="/login" id="loginBtn">Login</a>
+      <a href="#" id="logoutBtn">Logout</a>
     </nav>
+
   </div>
 </header>
 
 
-<section class="hero hero-small">
-  <h1 id="title">Loading...</h1>
-  <p id="subtitle">Please wait</p>
-</section>
+<main class="asset-wrapper">
 
+  <div class="asset-card">
 
-<main>
+    <div class="asset-head">
 
-  <div class="asset-page">
+      <img id="img">
 
-    <div class="asset-left">
-      <img id="image" />
+      <div>
+        <h1 id="name"></h1>
+        <span id="symbol"></span>
+      </div>
+
     </div>
 
 
-    <div class="asset-right">
-
-      <h2 id="name"></h2>
-
-      <div class="badge" id="symbol"></div>
-
-      <p class="desc" id="description"></p>
+    <div class="asset-price">
+      <b id="price">$0</b>
+    </div>
 
 
-      <div class="stats">
+    <div class="asset-grid">
 
-        <div class="stat">
-          <span>Price</span>
-          <b id="price">$0</b>
-        </div>
-
-        <div class="stat">
-          <span>Market Cap</span>
-          <b id="cap">$0</b>
-        </div>
-
-        <div class="stat">
-          <span>24h Change</span>
-          <b id="change">0%</b>
-        </div>
-
+      <div>
+        <span>Market Cap</span>
+        <b id="cap">$0</b>
       </div>
 
-
-      <div class="buttons">
-        <a href="/search" class="btn">Back</a>
-        <a href="/" class="btn primary">Home</a>
+      <div>
+        <span>24h Change</span>
+        <b id="change">0%</b>
       </div>
 
+      <div>
+        <span>Description</span>
+        <p id="desc">-</p>
+      </div>
 
-      <p class="api">
-        API:
-        <a id="api" target="_blank"></a>
-      </p>
+    </div>
 
+
+    <div class="asset-btns">
+      <a href="/search">← Back</a>
+      <a href="/">Home</a>
     </div>
 
   </div>
@@ -87,72 +78,34 @@
 
 
 <footer>
-  Crypto Watcher © 2025
+Crypto Watcher © 2026
 </footer>
 
 
 <script>
 
 function money(n){
-  if(!n) return "-";
-  return "$" + Number(n).toLocaleString();
+  return n ? "$"+Number(n).toLocaleString() : "-";
 }
-
 
 async function load(){
 
   const id = location.pathname.split("/").pop();
 
-  const url = "/api/assets/" + id;
+  const res = await fetch("/api/assets/"+id);
+  const a = await res.json();
 
-  document.getElementById("api").href = url;
-  document.getElementById("api").textContent = url;
+  img.src = a.imageUrl || "https://cdn-icons-png.flaticon.com/512/825/825508.png";
 
+  name.textContent = a.name;
+  symbol.textContent = a.symbol;
 
-  try{
+  price.textContent = money(a.price);
+  cap.textContent = money(a.marketCap);
 
-    const res = await fetch(url);
-    const a = await res.json();
+  change.textContent = a.change24h ? a.change24h+"%" : "-";
 
-    if(!res.ok){
-      document.getElementById("title").textContent = "Not Found";
-      document.getElementById("subtitle").textContent = "Asset not found";
-      return;
-    }
-
-
-    document.getElementById("title").textContent = a.name;
-    document.getElementById("subtitle").textContent = a.symbol;
-
-    document.getElementById("name").textContent = a.name;
-    document.getElementById("symbol").textContent = a.symbol;
-
-    document.getElementById("description").textContent =
-      a.description || "No description";
-
-    document.getElementById("price").textContent = money(a.price);
-    document.getElementById("cap").textContent = money(a.marketCap);
-
-
-    let ch = a.change24h;
-
-    if(ch !== null && ch !== undefined){
-      ch = Number(ch).toFixed(2);
-      document.getElementById("change").textContent = ch + "%";
-    }
-
-
-    document.getElementById("image").src =
-      a.imageUrl || "https://images.unsplash.com/photo-1621416894569-0f39ed31d247";
-
-
-  }catch(e){
-
-    document.getElementById("title").textContent = "Error";
-    document.getElementById("subtitle").textContent = "Server error";
-
-  }
-
+  desc.textContent = a.description || "No description";
 }
 
 load();
