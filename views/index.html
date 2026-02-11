@@ -100,26 +100,29 @@ async function loadTrending(){
       trendChart.destroy();
     }
 
-    trendChart = new Chart(trendChartCanvas,{
-      type:"line",
-      data:{
-        labels,
-        datasets:[{
-          data:prices,
-          borderColor:"#9b87ff",
-          backgroundColor:"rgba(155,135,255,0.15)",
-          fill:true,
-          tension:0.3
-        }]
-      },
-      options:{
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{display:false},
-          y:{ticks:{color:"#ccc"}}
-        }
-      }
-    });
+    const ctx = document.getElementById("trendChart");
+
+trendChart = new Chart(ctx,{
+  type:"line",
+  data:{
+    labels,
+    datasets:[{
+      data:prices,
+      borderColor:"#9b87ff",
+      backgroundColor:"rgba(155,135,255,0.15)",
+      fill:true,
+      tension:0.3
+    }]
+  },
+  options:{
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{display:false},
+      y:{ticks:{color:"#ccc"}}
+    }
+  }
+});
+
 
   }catch{
     document.getElementById("trendName").innerText="API error 😢";
