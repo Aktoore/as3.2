@@ -50,11 +50,6 @@ Crypto Watcher © 2026
 
 <script>
 
-function money(n){
-  if(n === undefined || n === null || n === "") return "-";
-  return "$" + Number(n).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
-}
-
 async function loadAssets(){
 
   const grid = document.getElementById("assetsGrid");
@@ -75,7 +70,7 @@ async function loadAssets(){
 
       <h3>${a.name}</h3>
 
-      <p>${a.symbol} • ${money(a.price)}</p>
+      <p>${a.symbol} • $${Number(a.price).toLocaleString()}</p>
 
       <a href="/item/${a._id}">View</a>
 
@@ -87,7 +82,9 @@ async function loadAssets(){
 
 loadAssets();
 
+// auto-refresh prices (and cards) every 3 seconds
 setInterval(loadAssets, 3000);
+
 
 </script>
 
