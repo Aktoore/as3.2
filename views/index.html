@@ -3,8 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Crypto Watcher</title>
+
 <link rel="stylesheet" href="/style.css">
+
 <script src="/main.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
@@ -34,7 +38,15 @@
 </section>
 
 
-<main class="container">
+<main class="container wide-container">
+
+  <!-- TRENDING COIN -->
+  <div class="trend-box">
+    <h3>🔥 Trending Coin</h3>
+    <p id="trendName">Loading...</p>
+    <canvas id="trendChart" height="100"></canvas>
+  </div>
+
 
   <h2>Popular Assets</h2>
 
@@ -49,6 +61,81 @@ Crypto Watcher © 2026
 
 
 <script>
+
+let trendChart = null;
+
+
+async function loadTrending(){
+
+  const coins = ["bitcoin","ethereum","solana","cardano","ripple"];
+
+  const coin = coins[Math.floor(Math.random()*coins.length)];
+
+  try{
+
+    // PRICE
+    const priceRes = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=usd`
+    );
+
+    const priceData = await priceRes.json();
+
+    // HISTORY
+    const chartRes = await fetch(
+      `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=7`
+    );
+
+    const chartData = await chartRes.json();
+
+    const prices = chartData.prices.map(p=>p[1]);
+    const labels = chartData.prices.map(p=>{
+      const d = new Date(p[0]);
+      return d.toLocaleDateString();
+    });
+
+    document.getElementById("trendName").innerText =
+      coin.toUpperCase()+" • $"+priceData[coin].usd.toLocaleString();
+
+
+    const ctx = document.getElementById("trendChart");
+
+    if(trendChart){
+      trendChart.destroy();
+    }
+
+    trendChart = new Chart(ctx,{
+      type:"line",
+      data:{
+        labels,
+        datasets:[{
+          data: prices,
+          borderColor:"#9b87ff",
+          backgroundColor:"rgba(155,135,255,0.15)",
+          fill:true,
+          tension:0.3
+        }]
+      },
+      options:{
+        plugins:{ legend:{ display:false }},
+        scales:{
+          x:{ display:false },
+          y:{ ticks:{ color:"#ccc" }}
+        }
+      }
+    });
+
+
+  }catch(e){
+
+    document.getElementById("trendName").innerText =
+      "API error 😢";
+
+  }
+
+}
+
+
+// ASSETS
 
 async function loadAssets(){
 
@@ -80,11 +167,11 @@ async function loadAssets(){
 
 }
 
+
+loadTrending();
 loadAssets();
 
-// auto-refresh prices (and cards) every 3 seconds
-setInterval(loadAssets, 3000);
-
+setInterval(loadAssets,3000);
 
 </script>
 

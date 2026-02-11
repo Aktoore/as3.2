@@ -24,7 +24,6 @@ body {
   padding: 0 20px;
 }
 
-
 /* HEADER */
 
 header {
@@ -529,4 +528,37 @@ footer {
     text-align: center;
   }
 
+}
+/* TRENDING BOX */
+
+.trend-box{
+  background:#1a1530;
+  border-radius:16px;
+  padding:25px;
+  margin:30px auto 50px;
+  max-width:600px;
+  text-align:center;
+  box-shadow:0 0 25px rgba(100,80,255,0.25);
+}
+
+.trend-box h3{
+  margin-bottom:8px;
+}
+
+#trendName{
+  color:#9b87ff;
+  font-weight:bold;
+  margin-bottom:15px;
+}
+
+
+/* WIDE CONTAINER */
+
+.wide-container{
+  max-width:80%!important;
+}
+
+.wide-container .card-grid{
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:30px;
 }
