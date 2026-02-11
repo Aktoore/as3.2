@@ -40,7 +40,7 @@
 
 <main class="container wide-container">
 
-  <!-- TRENDING COIN -->
+  <!-- TRENDING -->
   <div class="trend-box">
     <h3>🔥 Trending Coin</h3>
     <p id="trendName">Loading...</p>
@@ -50,7 +50,8 @@
 
   <h2>Popular Assets</h2>
 
-  <div id="assetsGrid" class="card-grid"></div>
+  <!-- USER FRIENDLY LIST -->
+  <div id="assetsGrid" class="assets-list"></div>
 
 </main>
 
@@ -65,22 +66,21 @@ Crypto Watcher © 2026
 let trendChart = null;
 
 
+// TRENDING
+
 async function loadTrending(){
 
   const coins = ["bitcoin","ethereum","solana","cardano","ripple"];
-
   const coin = coins[Math.floor(Math.random()*coins.length)];
 
   try{
 
-    // PRICE
     const priceRes = await fetch(
       `https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=usd`
     );
 
     const priceData = await priceRes.json();
 
-    // HISTORY
     const chartRes = await fetch(
       `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=usd&days=7`
     );
@@ -89,26 +89,23 @@ async function loadTrending(){
 
     const prices = chartData.prices.map(p=>p[1]);
     const labels = chartData.prices.map(p=>{
-      const d = new Date(p[0]);
-      return d.toLocaleDateString();
+      return new Date(p[0]).toLocaleDateString();
     });
 
     document.getElementById("trendName").innerText =
       coin.toUpperCase()+" • $"+priceData[coin].usd.toLocaleString();
 
 
-    const ctx = document.getElementById("trendChart");
-
     if(trendChart){
       trendChart.destroy();
     }
 
-    trendChart = new Chart(ctx,{
+    trendChart = new Chart(trendChartCanvas,{
       type:"line",
       data:{
         labels,
         datasets:[{
-          data: prices,
+          data:prices,
           borderColor:"#9b87ff",
           backgroundColor:"rgba(155,135,255,0.15)",
           fill:true,
@@ -116,26 +113,22 @@ async function loadTrending(){
         }]
       },
       options:{
-        plugins:{ legend:{ display:false }},
+        plugins:{legend:{display:false}},
         scales:{
-          x:{ display:false },
-          y:{ ticks:{ color:"#ccc" }}
+          x:{display:false},
+          y:{ticks:{color:"#ccc"}}
         }
       }
     });
 
-
-  }catch(e){
-
-    document.getElementById("trendName").innerText =
-      "API error 😢";
-
+  }catch{
+    document.getElementById("trendName").innerText="API error 😢";
   }
-
 }
 
 
-// ASSETS
+
+// ASSETS LIST
 
 async function loadAssets(){
 
@@ -151,17 +144,33 @@ async function loadAssets(){
 
   grid.innerHTML = data.map(a=>`
 
-    <div class="card">
+  <div class="asset-row">
 
-      <img src="${a.imageUrl || 'https://cdn-icons-png.flaticon.com/512/825/825508.png'}">
+    <img src="${a.imageUrl || 'https://cdn-icons-png.flaticon.com/512/825/825508.png'}">
 
-      <h3>${a.name}</h3>
-
-      <p>${a.symbol} • $${Number(a.price).toLocaleString()}</p>
-
-      <a href="/item/${a._id}">View</a>
-
+    <div class="asset-name">
+      <strong>${a.name}</strong>
+      <span>${a.symbol}</span>
     </div>
+
+    <div class="asset-col">
+      <span>Price</span>
+      $${Number(a.price).toLocaleString()}
+    </div>
+
+    <div class="asset-col">
+      <span>Market Cap</span>
+      $${Number(a.marketCap || 0).toLocaleString()}
+    </div>
+
+    <div class="asset-col">
+      <span>24h</span>
+      ${a.change24h || "0"}%
+    </div>
+
+    <a class="asset-btn" href="/item/${a._id}">View</a>
+
+  </div>
 
   `).join("");
 
