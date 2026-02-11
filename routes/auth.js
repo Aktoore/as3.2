@@ -4,9 +4,6 @@ const { connectDB } = require("../database/mongo");
 
 const router = express.Router();
 
-
-/* CHECK SESSION */
-
 router.get("/me", (req, res) => {
 
   if (!req.session?.user) {
@@ -22,9 +19,6 @@ router.get("/me", (req, res) => {
   });
 
 });
-
-
-/* REGISTER */
 
 router.post("/register", async (req, res) => {
 
@@ -68,9 +62,6 @@ router.post("/register", async (req, res) => {
 
 });
 
-
-/* LOGIN */
-
 router.post("/login", async (req, res) => {
 
   try {
@@ -111,9 +102,6 @@ router.post("/login", async (req, res) => {
   }
 
 });
-
-
-/* LOGOUT */
 
 router.post("/logout", (req, res) => {
 
