@@ -1,15 +1,15 @@
 /**
  * Price updater that PERSISTS changes to MongoDB.
- * - Every interval, loads all assets from DB
- * - Applies random-walk style price change
- * - Writes updated price (+ change24h) back with bulkWrite
+ * - Loads assets from DB
+ * - Applies controlled random-walk (no crazy growth)
+ * - Saves back to DB
  *
- * NOTE:
- * - This intentionally uses simple chaos, NOT real market prices.
- * - Data is persisted, so you WILL see the new values after refresh.
+ * Prices fluctuate around basePrice (mean reversion).
  */
 
 const { connectDB } = require("../database/mongo");
+
+// ---------------- Utils ----------------
 
 function clamp(n, min, max) {
   return Math.min(max, Math.max(min, n));
@@ -20,53 +20,71 @@ function roundTo(n, decimals = 2) {
   return Math.round(n * p) / p;
 }
 
+// ---------------- Price Logic ----------------
+
 /**
- * Create a new price based on old price.
- * - small drift most of the time
- * - occasional bigger "spike"
+ * Generate next price with mean reversion
+ * (price tries to return to basePrice)
  */
-function nextPrice(oldPrice) {
+function nextPrice(oldPrice, basePrice) {
   const base = Number(oldPrice);
-  if (!Number.isFinite(base) || base <= 0) return 1;
 
-  // 90%: small change within ~[-2%, +2%]
-  // 10%: spike within ~[-8%, +8%]
-  const spike = Math.random() < 0.10;
-  const maxPct = spike ? 0.08 : 0.02;
+  if (!Number.isFinite(base) || base <= 0) {
+    return 1;
+  }
 
-  const pct = (Math.random() * 2 - 1) * maxPct; // [-maxPct, +maxPct]
+  // target = "normal" price
+  const target = Number(basePrice) || base;
+
+  // random noise ±1%
+  const noise = (Math.random() * 2 - 1) * 0.01;
+
+  // pull back to base price
+  const pull = ((target - base) / target) * 0.02;
+
+  // combine
+  let pct = noise + pull;
+
+  // limit max movement
+  pct = clamp(pct, -0.03, 0.03); // ±3%
+
   let newPrice = base * (1 + pct);
 
-  // keep prices sane
-  newPrice = clamp(newPrice, 0.01, 1e12);
+  newPrice = clamp(newPrice, 0.01, 1e9);
 
   return roundTo(newPrice, 2);
 }
+
+// ---------------- DB Update ----------------
 
 async function updateAllAssetPricesOnce() {
   const db = await connectDB();
   const collection = db.collection("assets");
 
-  const assets = await collection
-    .find({}, { projection: { _id: 1, price: 1, marketCap: 1 } })
-    .toArray();
+  const assets = await collection.find({}).toArray();
 
-  if (!assets.length) return { updated: 0 };
+  if (!assets.length) {
+    return { updated: 0 };
+  }
 
   const now = new Date();
 
   const ops = assets.map((a) => {
     const oldPrice = Number(a.price);
-    const newPrice = nextPrice(oldPrice);
+    const basePrice = Number(a.basePrice || a.price);
 
-    // "24h change" here is just the last tick % change (for demo purposes)
-    const changePct = oldPrice > 0 ? roundTo(((newPrice - oldPrice) / oldPrice) * 100, 2) : 0;
+    const newPrice = nextPrice(oldPrice, basePrice);
 
-    // Optional: keep marketCap roughly proportional to price movement
-    const oldCap = Number(a.marketCap);
-    const newCap = Number.isFinite(oldCap) && oldCap > 0
-      ? roundTo(oldCap * (newPrice / (oldPrice || 1)), 0)
-      : oldCap;
+    // 24h change (demo)
+    const changePct =
+      oldPrice > 0
+        ? roundTo(((newPrice - oldPrice) / oldPrice) * 100, 2)
+        : 0;
+
+    // MarketCap = price * supply (or fake supply)
+    const supply = Number(a.supply || 1000000);
+
+    const newCap = roundTo(newPrice * supply, 0);
 
     return {
       updateOne: {
@@ -74,46 +92,61 @@ async function updateAllAssetPricesOnce() {
         update: {
           $set: {
             price: newPrice,
+            basePrice: basePrice, // keep base
             change24h: changePct,
             marketCap: newCap,
-            updatedAt: now
-          }
-        }
-      }
+            updatedAt: now,
+          },
+        },
+      },
     };
   });
 
-  const result = await collection.bulkWrite(ops, { ordered: false });
+  const result = await collection.bulkWrite(ops, {
+    ordered: false,
+  });
+
   return { updated: result.modifiedCount || 0 };
 }
 
+// ---------------- Scheduler ----------------
+
 /**
- * Starts a safe interval loop (prevents overlapping runs).
+ * Start price updater loop
  */
-function startPriceUpdater({ intervalMs = 3000 } = {}) {
+function startPriceUpdater({ intervalMs = 5000 } = {}) {
   let running = false;
 
   const runTick = async () => {
     if (running) return;
+
     running = true;
+
     try {
       const { updated } = await updateAllAssetPricesOnce();
+
       if (updated) {
-        console.log(`[priceUpdater] Updated ${updated} assets @ ${new Date().toISOString()}`);
+        console.log(
+          `[priceUpdater] Updated ${updated} assets @ ${new Date().toISOString()}`
+        );
       }
     } catch (err) {
-      console.error("[priceUpdater] Tick failed:", err?.message || err);
+      console.error("[priceUpdater] Error:", err?.message || err);
     } finally {
       running = false;
     }
   };
 
-  // do first tick shortly after startup
-  setTimeout(runTick, 1000);
+  // first run
+  setTimeout(runTick, 2000);
+
+  // interval
   setInterval(runTick, intervalMs);
 }
 
+// ---------------- Exports ----------------
+
 module.exports = {
   startPriceUpdater,
-  updateAllAssetPricesOnce
+  updateAllAssetPricesOnce,
 };
