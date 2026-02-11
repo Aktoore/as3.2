@@ -65,23 +65,21 @@ Crypto Watcher © 2026
 
 <script>
 
-searchForm.onsubmit = async e=>{
+function money(n){
+  if(n === undefined || n === null || n === "") return "-";
+  return "$" + Number(n).toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2});
+}
 
-  e.preventDefault();
+let lastQuery = "";
+let refreshTimer = null;
 
-  const params = new URLSearchParams();
-
-  if(q.value) params.append("q",q.value);
-  if(sort.value) params.append("sortBy",sort.value);
-  if(min.value) params.append("minPrice",min.value);
-
-  const res = await fetch("/api/assets?" + params);
+async function runSearch(){
+  const res = await fetch("/api/assets?" + lastQuery);
   const data = await res.json();
 
   const box = document.getElementById("res");
 
   if(!data.length){
-
     box.innerHTML="<p>No results</p>";
     return;
   }
@@ -94,13 +92,30 @@ searchForm.onsubmit = async e=>{
 
       <h3>${a.name}</h3>
 
-      <p>${a.symbol} • $${a.price}</p>
+      <p>${a.symbol} • ${money(a.price)}</p>
 
       <a href="/item/${a._id}">View</a>
 
     </div>
 
   `).join("");
+}
+
+searchForm.onsubmit = async e=>{
+
+  e.preventDefault();
+
+  const params = new URLSearchParams();
+
+  if(q.value) params.append("q",q.value);
+  if(sort.value) params.append("sortBy",sort.value);
+  if(min.value) params.append("minPrice",min.value);
+
+  lastQuery = String(params);
+  await runSearch();
+
+  if(refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(runSearch, 3000);
 
 };
 
