@@ -1,15 +1,6 @@
-/**
- * Price updater that PERSISTS changes to MongoDB.
- * - Loads assets from DB
- * - Applies controlled random-walk (no crazy growth)
- * - Saves back to DB
- *
- * Prices fluctuate around basePrice (mean reversion).
- */
 
 const { connectDB } = require("../database/mongo");
 
-// ---------------- Utils ----------------
 
 function clamp(n, min, max) {
   return Math.min(max, Math.max(min, n));
@@ -20,12 +11,6 @@ function roundTo(n, decimals = 2) {
   return Math.round(n * p) / p;
 }
 
-// ---------------- Price Logic ----------------
-
-/**
- * Generate next price with mean reversion
- * (price tries to return to basePrice)
- */
 function nextPrice(oldPrice, basePrice) {
   const base = Number(oldPrice);
 
@@ -33,20 +18,15 @@ function nextPrice(oldPrice, basePrice) {
     return 1;
   }
 
-  // target = "normal" price
   const target = Number(basePrice) || base;
 
-  // random noise ±1%
   const noise = (Math.random() * 2 - 1) * 0.01;
 
-  // pull back to base price
   const pull = ((target - base) / target) * 0.02;
 
-  // combine
   let pct = noise + pull;
 
-  // limit max movement
-  pct = clamp(pct, -0.03, 0.03); // ±3%
+  pct = clamp(pct, -0.03, 0.03); 
 
   let newPrice = base * (1 + pct);
 
@@ -55,7 +35,6 @@ function nextPrice(oldPrice, basePrice) {
   return roundTo(newPrice, 2);
 }
 
-// ---------------- DB Update ----------------
 
 async function updateAllAssetPricesOnce() {
   const db = await connectDB();
@@ -75,13 +54,11 @@ async function updateAllAssetPricesOnce() {
 
     const newPrice = nextPrice(oldPrice, basePrice);
 
-    // 24h change (demo)
     const changePct =
       oldPrice > 0
         ? roundTo(((newPrice - oldPrice) / oldPrice) * 100, 2)
         : 0;
 
-    // MarketCap = price * supply (or fake supply)
     const supply = Number(a.supply || 1000000);
 
     const newCap = roundTo(newPrice * supply, 0);
@@ -92,7 +69,7 @@ async function updateAllAssetPricesOnce() {
         update: {
           $set: {
             price: newPrice,
-            basePrice: basePrice, // keep base
+            basePrice: basePrice, 
             change24h: changePct,
             marketCap: newCap,
             updatedAt: now,
@@ -109,11 +86,6 @@ async function updateAllAssetPricesOnce() {
   return { updated: result.modifiedCount || 0 };
 }
 
-// ---------------- Scheduler ----------------
-
-/**
- * Start price updater loop
- */
 function startPriceUpdater({ intervalMs = 5000 } = {}) {
   let running = false;
 
@@ -137,14 +109,11 @@ function startPriceUpdater({ intervalMs = 5000 } = {}) {
     }
   };
 
-  // first run
   setTimeout(runTick, 2000);
 
-  // interval
   setInterval(runTick, intervalMs);
 }
 
-// ---------------- Exports ----------------
 
 module.exports = {
   startPriceUpdater,

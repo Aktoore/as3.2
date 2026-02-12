@@ -1,11 +1,6 @@
 const { connectDB } = require("../database/mongo");
 const { ObjectId } = require("mongodb");
 
-// Simple in-memory "fake market" that makes prices move.
-// - Does NOT overwrite DB prices (so admin values stay as your seed)
-// - Every request returns the current simulated price
-// - Uses a random-walk with small drift + volatility
-
 let initPromise = null;
 const state = new Map();
 
@@ -28,9 +23,8 @@ function makeAssetState(seedPrice) {
     price: Math.max(0.01, p),
     open24h: Math.max(0.01, p),
     lastTs: Date.now(),
-    // 0.3% .. 2.5% per second-ish, looks "alive" but not crazy
     vol: 0.003 + Math.random() * 0.022,
-    drift: (Math.random() - 0.5) * 0.0004, // tiny drift
+    drift: (Math.random() - 0.5) * 0.0004, 
   };
 }
 
@@ -38,7 +32,6 @@ function stepOne(s, now) {
   const dtMs = now - s.lastTs;
   if (dtMs <= 0) return;
 
-  // convert to roughly "per second" steps
   const steps = clamp(Math.floor(dtMs / 1000), 1, 60);
   for (let i = 0; i < steps; i++) {
     const shock = randn() * s.vol;
@@ -77,11 +70,9 @@ function decorate(asset) {
   const now = Date.now();
   stepOne(s, now);
 
-  // round to cents for nicer UI
   const price = Math.round(s.price * 100) / 100;
   const change24h = Math.round(((price / s.open24h) * 100 - 100) * 100) / 100; // %
 
-  // keep the original object shape, but replace price + change24h
   return {
     ...asset,
     price,
@@ -93,11 +84,9 @@ function upsertFromDb(asset) {
   if (!asset || !asset._id) return;
   const id = String(asset._id);
 
-  // if asset exists, keep current price but adjust volatility a bit
   if (state.has(id)) {
     const s = state.get(id);
     if (Number.isFinite(Number(asset.price))) {
-      // If admin updated the price, re-seed the market gently around it
       s.price = Math.max(0.01, Number(asset.price));
       s.open24h = Math.max(0.01, Number(asset.price));
       s.lastTs = Date.now();
